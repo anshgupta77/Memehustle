@@ -2,7 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
-import './App.css';
+import Header from './components/Header';
+import MemeGallery from './components/MemeGallery';
+import CreateMeme from './components/CreateMeme';
+import Leaderboard from './components/Leaderboard';
+import TerminalLoader from './components/TerminalLoader';
 
 const socket = io('http://localhost:5000');
 
@@ -11,19 +15,11 @@ function App() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [currentView, setCurrentView] = useState('gallery');
   const [loading, setLoading] = useState(false);
-  const [terminalText, setTerminalText] = useState('');
-
-  // Meme creation form
-  const [newMeme, setNewMeme] = useState({
-    title: '',
-    image_url: '',
-    tags: ''
-  });
+  const [showTerminal, setShowTerminal] = useState(true);
 
   useEffect(() => {
     fetchMemes();
     fetchLeaderboard();
-    startTerminalEffect();
 
     // Socket event listeners
     socket.on('meme_created', (meme) => {
@@ -57,25 +53,10 @@ function App() {
     };
   }, []);
 
-  const startTerminalEffect = () => {
-    const text = 'INITIALIZING CYBERPUNK MEME MATRIX... LOADING NEON CHAOS...';
-    let i = 0;
-    const timer = setInterval(() => {
-      setTerminalText(text.slice(0, i));
-      i++;
-      if (i > text.length) {
-        clearInterval(timer);
-        setTimeout(() => setTerminalText(''), 2000);
-      }
-    }, 50);
-  };
-
   const fetchMemes = async () => {
     try {
-      const response = await fetch(`${'http://localhost:5000'}/api/memes`);
-      
+      const response = await fetch('http://localhost:5000/api/memes');
       const data = await response.json();
-      console.log('Fetched memes:', data);
       setMemes(data);
     } catch (error) {
       console.error('Error fetching memes:', error);
@@ -84,7 +65,7 @@ function App() {
 
   const fetchLeaderboard = async () => {
     try {
-      const response = await fetch(`${'http://localhost:5000'}/api/leaderboard?top=10`);
+      const response = await fetch('http://localhost:5000/api/leaderboard?top=10');
       const data = await response.json();
       setLeaderboard(data);
     } catch (error) {
@@ -92,27 +73,23 @@ function App() {
     }
   };
 
-  const createMeme = async (e) => {
-    e.preventDefault();
+  const createMeme = async (memeData) => {
     setLoading(true);
-    
     try {
-      const tags = newMeme.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-      const response = await fetch(`${'http://localhost:5000'}/api/memes`, {
+      const response = await fetch('http://localhost:5000/api/memes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newMeme,
-          tags
-        })
+        body: JSON.stringify(memeData)
       });
       
       if (response.ok) {
-        setNewMeme({ title: '', image_url: '', tags: '' });
-        fetchLeaderboard(); // Refresh leaderboard
+        fetchLeaderboard();
+        return true;
       }
+      return false;
     } catch (error) {
       console.error('Error creating meme:', error);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -120,7 +97,7 @@ function App() {
 
   const vote = async (memeId, type) => {
     try {
-      await fetch(`${ 'http://localhost:5000'}/api/memes/${memeId}/vote`, {
+      await fetch(`http://localhost:5000/api/memes/${memeId}/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type })
@@ -132,7 +109,7 @@ function App() {
 
   const placeBid = async (memeId, credits) => {
     try {
-      await fetch(`${ 'http://localhost:5000'}/api/memes/${memeId}/bid`, {
+      await fetch(`http://localhost:5000/api/memes/${memeId}/bid`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credits: parseInt(credits) })
@@ -144,7 +121,7 @@ function App() {
 
   const generateCaption = async (memeId) => {
     try {
-      const response = await fetch(`${ 'http://localhost:5000'}/api/memes/${memeId}/caption`, {
+      const response = await fetch(`http://localhost:5000/api/memes/${memeId}/caption`, {
         method: 'POST'
       });
       const data = await response.json();
@@ -157,234 +134,37 @@ function App() {
   };
 
   return (
-    <div className="App">
-      {/* Terminal Effect */}
-      {terminalText && (
-        <div className="terminal-overlay">
-          <div className="terminal-text">{terminalText}_</div>
-        </div>
+    <div className="w-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 text-cyan-400">
+      {showTerminal && (
+        <TerminalLoader onComplete={() => setShowTerminal(false)} />
       )}
 
-      {/* Header */}
-      <header className="cyber-header">
-        <h1 className="neon-title glitch" data-text="MEMEHUSTLE">
-          MEMEHUSTLE
-        </h1>
-        <p className="subtitle">CYBERPUNK AI MEME MARKETPLACE</p>
-        
-        <nav className="nav-buttons">
-          <button 
-            className={`cyber-btn ${currentView === 'gallery' ? 'active' : ''}`}
-            onClick={() => setCurrentView('gallery')}
-          >
-            MEME GALLERY
-          </button>
-          <button 
-            className={`cyber-btn ${currentView === 'create' ? 'active' : ''}`}
-            onClick={() => setCurrentView('create')}
-          >
-            CREATE MEME
-          </button>
-          <button 
-            className={`cyber-btn ${currentView === 'leaderboard' ? 'active' : ''}`}
-            onClick={() => setCurrentView('leaderboard')}
-          >
-            LEADERBOARD
-          </button>
-        </nav>
-      </header>
+      <Header 
+        currentView={currentView} 
+        setCurrentView={setCurrentView} 
+      />
       
-      <main className="main-content">
-        {/* Meme Gallery */}
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
         {currentView === 'gallery' && (
-          <div className="meme-gallery">
-            <h2 className="section-title">NEON MEME MATRIX</h2>
-            <div className="meme-grid">
-              {memes.map(meme => (
-                <MemeCard
-                  key={meme.id}
-                  meme={meme}
-                  onVote={vote}
-                  onBid={placeBid}
-                  onGenerateCaption={generateCaption}
-                />
-              ))}
-            </div>
-          </div>
+          <MemeGallery
+            memes={memes}
+            onVote={vote}
+            onBid={placeBid}
+            onGenerateCaption={generateCaption}
+          />
         )}
 
-        {/* Create Meme */}
         {currentView === 'create' && (
-          <div className="create-section">
-            <h2 className="section-title">HACK A NEW MEME</h2>
-            <form onSubmit={createMeme} className="meme-form">
-              <div className="form-group">
-                <label>Title</label>
-                <input
-                  type="text"
-                  value={newMeme.title}
-                  onChange={(e) => setNewMeme({...newMeme, title: e.target.value})}
-                  placeholder="Doge HODL"
-                  required
-                  className="cyber-input"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Image URL (optional)</label>
-                <input
-                  type="url"
-                  value={newMeme.image_url}
-                  onChange={(e) => setNewMeme({...newMeme, image_url: e.target.value})}
-                  placeholder="https://picsum.photos/400"
-                  className="cyber-input"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Tags (comma-separated)</label>
-                <input
-                  type="text"
-                  value={newMeme.tags}
-                  onChange={(e) => setNewMeme({...newMeme, tags: e.target.value})}
-                  placeholder="crypto, funny, doge"
-                  required
-                  className="cyber-input"
-                />
-              </div>
-              
-              <button 
-                type="submit" 
-                className="cyber-btn primary"
-                disabled={loading}
-              >
-                {loading ? 'HACKING...' : 'DEPLOY MEME'}
-              </button>
-            </form>
-          </div>
+          <CreateMeme
+            onCreateMeme={createMeme}
+            loading={loading}
+          />
         )}
 
-        {/* Leaderboard */}
         {currentView === 'leaderboard' && (
-          <div className="leaderboard-section">
-            <h2 className="section-title">TRENDING CHAOS</h2>
-            <div className="leaderboard">
-              {leaderboard.map((meme, index) => (
-                <div key={meme.id} className="leaderboard-item">
-                  <div className="rank">#{index + 1}</div>
-                  <img src={meme.image_url} alt={meme.title} className="thumb" />
-                  <div className="meme-info">
-                    <h3>{meme.title}</h3>
-                    <p className="vibe">{meme.vibe}</p>
-                    <div className="stats">
-                      <span className="upvotes">🔥 {meme.upvotes}</span>
-                      <span className="owner">@{meme.owner_id}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <Leaderboard leaderboard={leaderboard} />
         )}
       </main>
-    </div>
-  );
-}
-
-// Meme Card Component
-function MemeCard({ meme, onVote, onBid, onGenerateCaption }) {
-  const [bidAmount, setBidAmount] = useState('');
-  const [showBidInput, setShowBidInput] = useState(false);
-
-  const handleBid = (e) => {
-    e.preventDefault();
-    if (bidAmount && parseInt(bidAmount) > 0) {
-      onBid(meme.id, bidAmount);
-      setBidAmount('');
-      setShowBidInput(false);
-    }
-  };
-
-  return (
-    <div className="meme-card">
-      <div className="meme-header">
-        <h3 className="meme-title">{meme.title}</h3>
-        <div className="meme-vibe">{meme.vibe}</div>
-      </div>
-      
-      <div className="meme-image-container">
-        <img src={meme.image_url} alt={meme.title} className="meme-image" />
-        <div className="image-overlay">
-          <div className="tags">
-            {meme.tags?.map(tag => (
-              <span key={tag} className="tag">#{tag}</span>
-            ))}
-          </div>
-        </div>
-      </div>
-      
-      {meme.caption && (
-        <div className="meme-caption">"{meme.caption}"</div>
-      )}
-      
-      <div className="meme-actions">
-        <div className="vote-section">
-          <button 
-            className="vote-btn up"
-            onClick={() => onVote(meme.id, 'up')}
-          >
-            ⬆️ {meme.upvotes}
-          </button>
-          <button 
-            className="vote-btn down"
-            onClick={() => onVote(meme.id, 'down')}
-          >
-            ⬇️
-          </button>
-        </div>
-        
-        <div className="bid-section">
-          {meme.highest_bid > 0 && (
-            <div className="current-bid">
-              🏆 {meme.highest_bid} credits
-              <br />
-              <small>@{meme.highest_bidder}</small>
-            </div>
-          )}
-          
-          {!showBidInput ? (
-            <button 
-              className="cyber-btn small"
-              onClick={() => setShowBidInput(true)}
-            >
-              PLACE BID
-            </button>
-          ) : (
-            <form onSubmit={handleBid} className="bid-form">
-              <input
-                type="number"
-                value={bidAmount}
-                onChange={(e) => setBidAmount(e.target.value)}
-                placeholder="Credits"
-                className="bid-input"
-                min="1"
-              />
-              <button type="submit" className="cyber-btn small">BID</button>
-            </form>
-          )}
-        </div>
-      </div>
-      
-      <div className="meme-footer">
-        <span className="current-bid">owner</span>
-        <span className="owner">@{meme.owner_id}</span>
-        <button 
-          className="cyber-btn mini"
-          onClick={() => onGenerateCaption(meme.id)}
-        >
-          🤖 AI CAPTION
-        </button>
-      </div>
     </div>
   );
 }
