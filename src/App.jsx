@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
-import Header from './Components/Header';
-import MemeGallery from './Components/MemeGallery';
-import CreateMeme from './Components/CreateMeme';
+import Header from "./Components/Header";
+import MemeGallery from "./Components/MemeGallery";
+import CreateMeme from "./Components/CreateMeme";
 import TerminalLoader from './Components/TerminalLoader';
 import Leaderboard from "./Components/LeaderBoard";
 const socket = io('http://localhost:5000');
