@@ -7,7 +7,8 @@ import MemeGallery from "./components/MemeGallery";
 import CreateMeme from "./components/CreateMeme";
 import TerminalLoader from './components/TerminalLoader';
 import Leaderboard from "./components/LeaderBoard";
-const socket = io('http://localhost:5000');
+import { backendUrl } from './constraint';
+const socket = io(`${backendUrl}`);
 
 function App() {
   const [memes, setMemes] = useState([]);
@@ -54,7 +55,7 @@ function App() {
 
   const fetchMemes = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/memes');
+      const response = await fetch(`${backendUrl}/api/memes`);
       const data = await response.json();
       setMemes(data);
     } catch (error) {
@@ -64,7 +65,7 @@ function App() {
 
   const fetchLeaderboard = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/leaderboard?top=10');
+      const response = await fetch(`${backendUrl}/api/leaderboard?top=10`);
       const data = await response.json();
       setLeaderboard(data);
     } catch (error) {
@@ -75,7 +76,7 @@ function App() {
   const createMeme = async (memeData) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/memes', {
+      const response = await fetch(`${backendUrl}/api/memes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(memeData)
@@ -96,7 +97,7 @@ function App() {
 
   const vote = async (memeId, type) => {
     try {
-      await fetch(`http://localhost:5000/api/memes/${memeId}/vote`, {
+      await fetch(`${backendUrl}/api/memes/${memeId}/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type })
@@ -108,7 +109,7 @@ function App() {
 
   const placeBid = async (memeId, credits) => {
     try {
-      await fetch(`http://localhost:5000/api/memes/${memeId}/bid`, {
+      await fetch(`${backendUrl}/api/memes/${memeId}/bid`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credits: parseInt(credits) })
@@ -120,7 +121,7 @@ function App() {
 
   const generateCaption = async (memeId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/memes/${memeId}/caption`, {
+      const response = await fetch(`${backendUrl}/api/memes/${memeId}/caption`, {
         method: 'POST'
       });
       const data = await response.json();

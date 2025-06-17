@@ -25,7 +25,7 @@ const MemeCard = ({ meme, onVote, onBid, onGenerateCaption, index }) => {
     <div 
       className="group relative bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm 
                  border border-cyan-500/30 rounded-xl overflow-hidden transform transition-all duration-300
-                 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20 hover:border-purple-500/50"
+                 hover:shadow-xl hover:shadow-purple-500/20 hover:border-purple-500/50"
       style={{ animationDelay: `${index * 0.1}s` }}
     >
       {/* Header */}
