@@ -17,6 +17,22 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [showTerminal, setShowTerminal] = useState(true);
 
+
+
+  const users = ['cyberpunk420', 'neonhacker', 'matrixdoge', 'synthwave99'];
+
+function getCurrentUser() {
+  let user = localStorage.getItem('meme_user');
+  if (!user) {
+    user = users[Math.floor(Math.random() * users.length)];
+    localStorage.setItem('meme_user', user);
+  }
+  return user;
+}
+
+const currentUser = getCurrentUser();
+
+socket.emit('register_user', { user_id: currentUser });
   useEffect(() => {
     fetchMemes();
     fetchLeaderboard();
@@ -100,7 +116,7 @@ function App() {
       await fetch(`${backendUrl}/api/memes/${memeId}/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type })
+        body: JSON.stringify({ type , user_id: currentUser})
       });
     } catch (error) {
       console.error('Error voting:', error);
@@ -125,6 +141,7 @@ function App() {
         method: 'POST'
       });
       const data = await response.json();
+      console.log('Generated caption:', data);
       setMemes(prev => prev.map(meme => 
         meme.id === memeId ? data : meme
       ));
@@ -132,6 +149,9 @@ function App() {
       console.error('Error generating caption:', error);
     }
   };
+
+
+
 
   return (
     <div className="w-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 text-cyan-400">
