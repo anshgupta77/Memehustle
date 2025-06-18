@@ -114,11 +114,18 @@ socket.emit('register_user', { user_id: currentUser });
 
   const vote = async (memeId, type) => {
     try {
-      await fetch(`${backendUrl}/api/memes/${memeId}/vote`, {
+      const response = await fetch(`${backendUrl}/api/memes/${memeId}/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type , user_id: currentUser})
       });
+
+       
+      if (response.ok) {
+        fetchLeaderboard();
+        return true;
+      }
+      
     } catch (error) {
       console.error('Error voting:', error);
     }
