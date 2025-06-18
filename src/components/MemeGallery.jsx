@@ -1,7 +1,7 @@
 import React from 'react';
 import MemeCard from './MemeCard';
 
-const MemeGallery = ({ memes, onVote, onBid, onGenerateCaption }) => {
+const MemeGallery = ({ memes, onVote, onBid, onGenerateCaption, currentUser }) => {
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -29,6 +29,7 @@ const MemeGallery = ({ memes, onVote, onBid, onGenerateCaption }) => {
               onBid={onBid}
               onGenerateCaption={onGenerateCaption}
               index={index}
+              currentUser={currentUser}
             />
           ))}
         </div>

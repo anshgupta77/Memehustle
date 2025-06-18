@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronUp, ChevronDown, Zap, User, DollarSign } from 'lucide-react';
 
-const MemeCard = ({ meme, onVote, onBid, onGenerateCaption, index }) => {
+const MemeCard = ({ meme, onVote, onBid, onGenerateCaption, index, currentUser }) => {
   const [bidAmount, setBidAmount] = useState('');
   const [showBidInput, setShowBidInput] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
@@ -127,7 +127,7 @@ const MemeCard = ({ meme, onVote, onBid, onGenerateCaption, index }) => {
               </span>
               <span className="text-gray-400 flex items-center gap-1">
                 <User size={12} />
-                @{meme.highest_bidder}
+                @{currentUser}
               </span>
             </div>
           )}

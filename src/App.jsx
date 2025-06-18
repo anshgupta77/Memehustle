@@ -25,6 +25,7 @@ function getCurrentUser() {
   let user = localStorage.getItem('meme_user');
   if (!user) {
     user = users[Math.floor(Math.random() * users.length)];
+    console.log("Current user:", user);
     localStorage.setItem('meme_user', user);
   }
   return user;
@@ -128,7 +129,7 @@ socket.emit('register_user', { user_id: currentUser });
       await fetch(`${backendUrl}/api/memes/${memeId}/bid`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credits: parseInt(credits) })
+        body: JSON.stringify({ credits: parseInt(credits) , user_id: currentUser})
       });
     } catch (error) {
       console.error('Error placing bid:', error);
@@ -171,6 +172,7 @@ socket.emit('register_user', { user_id: currentUser });
             onVote={vote}
             onBid={placeBid}
             onGenerateCaption={generateCaption}
+            currentUser={currentUser}
           />
         )}
 
